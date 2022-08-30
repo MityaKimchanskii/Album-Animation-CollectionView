@@ -35,7 +35,7 @@ class ViewController: UIViewController {
     
     static let headerKind = "header-element-kind"
     
-    var collectionView = UICollectionView()
+    var collectionView: UICollectionView! = nil
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,8 +45,27 @@ class ViewController: UIViewController {
 
 // MARK: - Layout
 extension ViewController {
+    
     func layout() {
+        // collectionView
+        collectionView = UICollectionView(frame: .zero, collectionViewLayout: createLayout())
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.backgroundColor = .systemBackground
         
+        view.addSubview(collectionView)
+        
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        collectionView.register(ListCell.self, forCellWithReuseIdentifier: ListCell.reuseIdentifirer)
+        collectionView.register(HeaderView.self, forSupplementaryViewOfKind: ViewController.headerKind, withReuseIdentifier: HeaderView.reuseIdentifier)
+        
+        collectionView.delegate = self
+        collectionView.dataSource = self
     }
     
     func createLayout() -> UICollectionViewLayout {
@@ -68,4 +87,32 @@ extension ViewController {
         let layout = UICollectionViewCompositionalLayout(section: section)
         return layout
     }
+}
+
+extension ViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return songs.count
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ListCell.reuseIdentifirer, for: indexPath) as! ListCell
+        cell.label.text = songs[indexPath.item]
+        
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: HeaderView.reuseIdentifier, for: indexPath) as! HeaderView
+        let track = Track(imageName: "tron")
+        headerView.track = track
+        
+//        self.headerView = headerView
+//        self.headerView?.isHidden = true
+        
+        return headerView
+    }
+}
+
+extension ViewController: UICollectionViewDelegate {
+    
 }
